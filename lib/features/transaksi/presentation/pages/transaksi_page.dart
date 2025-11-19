@@ -40,25 +40,26 @@ class TransaksiPage extends StatelessWidget {
             children: [
               const SizedBox(height: 20),
               _buildSummaryCard(
-                icon: Icons.add_circle_outline,
+                icon: Icons.payment,
                 iconColor: Colors.green,
-                title: 'Total Pemasukan Bulan Ini',
-                amount: 'Rp. 15.000.000',
+                title: 'Ujungmanik Berholawat',
+                amount: 'Rp. 1.500.000',
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 20),
               _buildSummaryCard(
-                icon: Icons.remove_circle_outline,
-                iconColor: Colors.red,
-                title: 'Total Pengeluaran Bulan Ini',
-                amount: 'Rp. 6.500.000',
-              ),
-              const SizedBox(height: 12),
-              _buildSummaryCard(
-                icon: Icons.account_balance_wallet,
+                icon: Icons.payment,
                 iconColor: Colors.green,
-                title: 'Total Pengeluaran Bulan Ini',
-                amount: 'Rp. 8.500.000',
+                title: 'Wedding Rina & Roni',
+                amount: 'Rp. 2.000.000',
               ),
+              const SizedBox(height: 20),
+              _buildSummaryCard(
+                icon: Icons.payment,
+                iconColor: Colors.green,
+                title: 'Pengajian Akbar Bersama Gus Iqdam',
+                amount: 'Rp. 3.000.000',
+              ),
+              
 
               // Tombol tambah (+)
             Center(

@@ -1,26 +1,47 @@
 import 'package:flutter/material.dart';
-import 'package:livee_manager/widgets/custom_appbar.dart';
-import 'package:livee_manager/widgets/custom_bottom_navbar.dart';
+import 'package:provider/provider.dart';
+import '../controllers/event_controller.dart';
+import '../../../../widgets/custom_appbar.dart';
+import '../../../../widgets/custom_bottom_navbar.dart';
 
-class EventPage extends StatelessWidget {
+class EventPage extends StatefulWidget {
   const EventPage({super.key});
 
   @override
+  State<EventPage> createState() => _EventPageState();
+}
+
+class _EventPageState extends State<EventPage> {
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final controller = Provider.of<EventController>(context, listen: false);
+      controller.loadEvents();
+      _initialized = true;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final controller = Provider.of<EventController>(context, listen: false);
+controller.loadEvents();
+
+
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
-
-      appBar: CustomAppBar(),
+      appBar: const CustomAppBar(),
       bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 1, // halaman yang sedang aktif
+        currentIndex: 1,
         onTap: (index) {
-          // Navigasi berdasarkan index
           switch (index) {
             case 0:
               Navigator.pushNamed(context, '/home');
               break;
             case 1:
-              // Sudah di Event
+              // already here
               break;
             case 2:
               Navigator.pushNamed(context, '/transaksi');
@@ -34,7 +55,6 @@ class EventPage extends StatelessWidget {
           }
         },
       ),
-
 
       body: SafeArea(
         child: SingleChildScrollView(
@@ -53,16 +73,29 @@ class EventPage extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // 🔹 Daftar event horizontal
+              // List horizontal — NOW from controller.events
               SizedBox(
                 height: 250,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return _buildEventCard();
-                  },
-                ),
+                child: Builder(builder: (context) {
+                  if (controller.isLoading) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  if (controller.error != null) {
+                    return Center(child: Text('Error: ${controller.error}'));
+                  }
+                  if (controller.events.isEmpty) {
+                    return const Center(child: Text('Tidak ada event'));
+                  }
+
+                  return ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: controller.events.length,
+                    itemBuilder: (context, index) {
+                      final e = controller.events[index];
+                      return _buildEventCardFromEntity(e);
+                    },
+                  );
+                }),
               ),
 
               const SizedBox(height: 24),
@@ -84,8 +117,8 @@ class EventPage extends StatelessWidget {
     );
   }
 
-  // 🔸 Desain kartu event
-  Widget _buildEventCard() {
+  // adaptasi _buildEventCard to accept entity while preserving UI design
+  Widget _buildEventCardFromEntity(event) {
     return Container(
       width: 180,
       margin: const EdgeInsets.only(right: 16),
@@ -122,27 +155,28 @@ class EventPage extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 12),
-          const Text(
-            'Ujungmanik Bersholawat',
+          Text(
+            event.title,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 14,
               color: Colors.black87,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            'Ordered by: Pak Sugeng',
-            style: TextStyle(
+          Text(
+            'Ordered by: ${event.orderedBy}',
+            style: const TextStyle(
               fontSize: 12,
               color: Colors.black54,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
-            '30 Oktober 2025',
-            style: TextStyle(
+          Text(
+            // format date sama seperti desain-mu: dd MMMM yyyy
+            '${event.date.day.toString().padLeft(2,'0')} ${_monthName(event.date.month)} ${event.date.year}',
+            style: const TextStyle(
               fontSize: 12,
               color: Colors.black87,
             ),
@@ -152,7 +186,9 @@ class EventPage extends StatelessWidget {
             margin: const EdgeInsets.symmetric(horizontal: 16),
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                // bisa panggil navigator ke detail
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFFDDE3B8),
                 foregroundColor: Colors.black87,
@@ -177,7 +213,14 @@ class EventPage extends StatelessWidget {
     );
   }
 
-  // 🔸 Tombol besar bawah
+  String _monthName(int month) {
+    const names = [
+      '', 'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+    return names[month];
+  }
+
   Widget _buildActionButton(BuildContext context,
       {required String label, required IconData icon}) {
     return Container(
@@ -186,7 +229,7 @@ class EventPage extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: InkWell(
-        onTap: () {},
+        onTap: () {}, // implementasi tambah client/event bisa memanggil controller
         borderRadius: BorderRadius.circular(12),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

@@ -18,7 +18,7 @@ class _EventPageState extends State<EventPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (!_initialized) {
-      final controller = Provider.of<EventController>(context, listen: false);
+      final controller = Provider.of<EventController>(context, listen: true);
       controller.loadEvents();
       _initialized = true;
     }
@@ -26,10 +26,6 @@ class _EventPageState extends State<EventPage> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Provider.of<EventController>(context, listen: false);
-controller.loadEvents();
-
-
     return Scaffold(
       backgroundColor: const Color(0xFFF9F9F9),
       appBar: const CustomAppBar(),
@@ -76,27 +72,32 @@ controller.loadEvents();
               // List horizontal — NOW from controller.events
               SizedBox(
                 height: 250,
-                child: Builder(builder: (context) {
-                  if (controller.isLoading) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-                  if (controller.error != null) {
-                    return Center(child: Text('Error: ${controller.error}'));
-                  }
-                  if (controller.events.isEmpty) {
-                    return const Center(child: Text('Tidak ada event'));
-                  }
+                child: Consumer<EventController>(
+                  builder: (context, controller, _) {
+                    if (controller.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
 
-                  return ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: controller.events.length,
-                    itemBuilder: (context, index) {
-                      final e = controller.events[index];
-                      return _buildEventCardFromEntity(e);
-                    },
-                  );
-                }),
+                    if (controller.error != null) {
+                      return Center(child: Text('Error: ${controller.error}'));
+                    }
+
+                    if (controller.events.isEmpty) {
+                      return const Center(child: Text('Tidak ada event'));
+                    }
+
+                    return ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: controller.events.length,
+                      itemBuilder: (context, index) {
+                        final e = controller.events[index];
+                        return _buildEventCardFromEntity(e);
+                      },
+                    );
+                  },
+                ),
               ),
+
 
               const SizedBox(height: 24),
               _buildActionButton(

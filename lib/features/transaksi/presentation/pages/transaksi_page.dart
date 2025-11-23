@@ -1,88 +1,104 @@
 import 'package:flutter/material.dart';
-import 'package:livee_manager/widgets/custom_appbar.dart';
-import 'package:livee_manager/widgets/custom_bottom_navbar.dart';
+import 'package:provider/provider.dart';
+import '../controllers/transaction_controller.dart';
+import '../../../../widgets/custom_appbar.dart';
+import '../../../../widgets/custom_bottom_navbar.dart';
 
-class TransaksiPage extends StatelessWidget {
+class TransaksiPage extends StatefulWidget {
   const TransaksiPage({super.key});
+
+  @override
+  State<TransaksiPage> createState() => _TransaksiPageState();
+}
+
+class _TransaksiPageState extends State<TransaksiPage> {
+  bool _initialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      Provider.of<TransactionController>(context, listen: false).loadTransactions();
+      _initialized = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(),
       bottomNavigationBar: CustomBottomNavBar(
-        currentIndex: 2, // halaman yang sedang aktif
-        onTap: (index) {
-          // Navigasi berdasarkan index
-          switch (index) {
-            case 0:
-              Navigator.pushNamed(context, '/home');
-              break;
-            case 1:
-              Navigator.pushNamed(context, '/event');
-              break;
-            case 2:
-              // sudah di halaman transaksi
-              break;
-            case 3:
-              Navigator.pushNamed(context, '/laporan');
-              break;
-            case 4:
-              Navigator.pushNamed(context, '/profil');
-              break;
-          }
-        },
+        currentIndex: 2,
+        onTap: _onNavTap,
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              _buildSummaryCard(
-                icon: Icons.payment,
-                iconColor: Colors.green,
-                title: 'Ujungmanik Berholawat',
-                amount: 'Rp. 1.500.000',
-              ),
-              const SizedBox(height: 20),
-              _buildSummaryCard(
-                icon: Icons.payment,
-                iconColor: Colors.green,
-                title: 'Wedding Rina & Roni',
-                amount: 'Rp. 2.000.000',
-              ),
-              const SizedBox(height: 20),
-              _buildSummaryCard(
-                icon: Icons.payment,
-                iconColor: Colors.green,
-                title: 'Pengajian Akbar Bersama Gus Iqdam',
-                amount: 'Rp. 3.000.000',
-              ),
-              
+        child: Consumer<TransactionController>(
+          builder: (context, controller, _) {
+            if (controller.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-              // Tombol tambah (+)
-            Center(
-              child: Container(
-                margin: EdgeInsets.all(120),
-                child: FloatingActionButton(
-                  backgroundColor: const Color(0xFF7A8A10),
-                  shape: const CircleBorder(),
-                  onPressed: () {
-                    
-                  },
-                  child: const Icon(Icons.add, size: 30, color: Colors.white),
-                ),
+            if (controller.error != null) {
+              return Center(child: Text('Error: ${controller.error}'));
+            }
+
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+
+                  // LIST TRANSAKSI DARI CONTROLLER
+                  ...controller.transactions.map((t) {
+                    return Column(
+                      children: [
+                        _buildSummaryCard(
+                          icon: Icons.payment,
+                          iconColor: Colors.green,
+                          title: t.title,
+                          amount: "Rp. ${t.amount}",
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                    );
+                  }).toList(),
+
+                  _buildAddButton(),
+                ],
               ),
-            ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
   }
 
-   // Summary card
+  void _onNavTap(int index) {
+    switch (index) {
+      case 0: Navigator.pushNamed(context, '/home'); break;
+      case 1: Navigator.pushNamed(context, '/event'); break;
+      case 2: break;
+      case 3: Navigator.pushNamed(context, '/laporan'); break;
+      case 4: Navigator.pushNamed(context, '/profil'); break;
+    }
+  }
+
+  Widget _buildAddButton() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(120),
+        child: FloatingActionButton(
+          backgroundColor: const Color(0xFF7A8A10),
+          shape: const CircleBorder(),
+          onPressed: () {},
+          child: const Icon(Icons.add, size: 30, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  // UI TIDAK DIUBAH
   Widget _buildSummaryCard({
     required IconData icon,
     required Color iconColor,
@@ -110,17 +126,11 @@ class TransaksiPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(fontSize: 13),
-                ),
+                Text(title, style: const TextStyle(fontSize: 13)),
                 const SizedBox(height: 4),
                 Text(
                   amount,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
@@ -129,5 +139,4 @@ class TransaksiPage extends StatelessWidget {
       ),
     );
   }
-
 }

@@ -17,6 +17,18 @@ import 'package:livee_manager/features/event/data/repositories/event_repository_
 import 'package:livee_manager/features/event/domain/usecases/get_all_events.dart';
 import 'package:livee_manager/features/event/presentation/controllers/event_controller.dart';
 
+import 'package:livee_manager/features/transaksi/presentation/controllers/transaction_controller.dart';
+import 'package:livee_manager/features/transaksi/data/datasources/transaction_remote_datasource.dart';
+import 'package:livee_manager/features/transaksi/data/repositories/transaction_repository_impl.dart';
+import 'package:livee_manager/features/transaksi/domain/usecases/get_all_transacion.dart';
+import 'package:livee_manager/features/transaksi/domain/usecases/create_transaction.dart';
+
+
+import 'package:livee_manager/features/profil/presentation/controllers/profile_controller.dart';
+import 'package:livee_manager/features/profil/domain/usecases/get_profile.dart';
+import 'package:livee_manager/features/profil/data/repositories/profile_repository_impl.dart';
+import 'package:livee_manager/features/profil/data/datasources/profile_remote_datasource.dart';
+
 
 
 import 'features/login/presentation/pages/login_page.dart';
@@ -59,6 +71,29 @@ void main() async{
             )
           ),
         ),
+
+
+        ChangeNotifierProvider(
+          create: (_) => TransactionController(
+            getAllTransactions: GetAllTransactions(
+              TransactionRepositoryImpl(TransactionRemoteDataSourceImpl()),
+            ),
+            createTransaction: CreateTransaction(
+              TransactionRepositoryImpl(TransactionRemoteDataSourceImpl()),
+            ),
+          ),
+        ),
+
+
+        ChangeNotifierProvider(
+          create: (_) => ProfileController(
+            getProfileData: GetProfile(
+              ProfileRepositoryImpl(ProfileRemoteDataSourceImpl()),
+            ),
+          )..loadProfile(),
+        ),
+
+
 
 
 
